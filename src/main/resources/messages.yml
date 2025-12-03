@@ -1,0 +1,47 @@
+# =======================================================
+# Q-BLACKJACK MESSAGES FILE
+# =======================================================
+messages:
+  prefix: "&b[QBlackjack] &7"
+
+  error:
+    console: "&cOnly players can use this command."
+    already-playing: "&cYou already have an active Blackjack session."
+    insufficient-funds: "&cYou do not have enough balance for that bet."
+    invalid-format: "&cInvalid bet format. Please use numbers."
+    invalid-bet-range: "&cBets must be between %min% and %max%."
+    invalid-bet-increment: "&cBets must be multiples of %increment%."
+    general: "&cAn error occurred while processing the transaction."
+
+  game:
+    bet-placed: "&aA bet of &e%bet%&a has been placed. Starting game..."
+
+  result:
+    blackjack: "&6BLACKJACK! &aYou win &e%winnings%&a."
+    win: "&aYou win! &aYou receive &e%winnings%&a."
+    push: "&ePUSH (Tie). &7Bet of &e%bet%&7 returned."
+    lose: "&cLose. &7You lose the bet of &e%bet%&7."
+    bust: "&4BUST! &cYou exceeded 21 and lost the bet of &e%bet%&c."
+    forfeit: "&cYou left the game. &7Bet of &e%bet%&7 forfeited."
+
+  chip:
+    usage: "&bUsage: /blackjack chip give <player> <amount> | check"
+    success: "&aSuccessfully added &e%amount% &aChips to %player%."
+    given: "&aYou received &e%amount% &aChips from an admin."
+    balance: "&aYour current Chip balance is &e%balance%&a."
+    error-player-offline: "&cPlayer %player% is offline or does not exist."
+    error-no-permission: "&cYou do not have permission to use this command."
+
+  exchange:
+    usage: "&bUsage: /blackjack exchange <amount>"
+    vault-mode-required: "&cEconomy mode must be set to CHIP to use this exchange."
+    vault-not-available: "&cVault is not detected for this transaction."
+    success: "&aSuccessfully exchanged &e%vault_amount% &aMoney for &e%chip_amount% &aChips."
+    insufficient-vault: "&cYour Vault Money balance is insufficient for this exchange."
+
+  gui-lore:
+    forfeit: "&eClick to Forfeit &7(Bet is lost)"
+    exit: "&eClick to Exit the Table"
+
+  help:
+    usage: "&bUsage: /blackjack <bet_amount>"

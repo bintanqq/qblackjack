@@ -1,0 +1,26 @@
+package me.bintanq.qBlackjack.core;
+
+import me.bintanq.qBlackjack.QBlackjack;
+import org.bukkit.configuration.file.FileConfiguration;
+
+public class SettingsManager {
+    private final QBlackjack plugin;
+    private final FileConfiguration config;
+
+    public SettingsManager(QBlackjack plugin) {
+        this.plugin = plugin;
+        this.config = plugin.getConfig();
+    }
+
+    public FileConfiguration getConfig() {
+        return this.config; // Asumsikan variabel internal konfigurasi bernama 'config'
+    }
+
+    public String getEconomyMode() { return config.getString("economy-mode", "VAULT"); }
+    public void setEconomyMode(String mode) { config.set("economy-mode", mode); plugin.saveConfig(); }
+    public double getBlackjackMultiplier() { return config.getDouble("payout.blackjack-multiplier", 2.5); }
+    public double getWinMultiplier() { return config.getDouble("payout.win-multiplier", 2.0); }
+    public double getMinBet() { return config.getDouble("betting-limits.min-bet", 100.00); }
+    public double getMaxBet() { return config.getDouble("betting-limits.max-bet", 5000.00); }
+    public double getIncrement() { return config.getDouble("betting-limits.increment", 50.00); }
+}

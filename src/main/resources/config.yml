@@ -1,0 +1,27 @@
+# =======================================================
+# Q-BLACKJACK CONFIGURATION FILE
+# =======================================================
+economy-mode: CHIP # PILIHAN: VAULT atau CHIP
+
+payout:
+  blackjack-multiplier: 2.5
+  win-multiplier: 2.0
+
+betting-limits:
+  min-bet: 100.00
+  max-bet: 5000.00
+  increment: 50.00
+
+gui-items:
+  player-score:
+    material: DIAMOND
+    name: "&bPlayer Hand Value"
+    lore: "&7Value of your current hand."
+  current-bet:
+    material: GOLD_INGOT
+    name: "&eCurrent Bet"
+    lore: "&7Status: %status%" # %status% diganti saat runtime
+  dealer-score:
+    material: EMERALD
+    name: "&aDealer Visible Value"
+    lore: "&7Visible value of dealer's hand."
