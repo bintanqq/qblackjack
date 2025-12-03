@@ -27,6 +27,12 @@ public class MessageManager {
         this.messagesConfig = YamlConfiguration.loadConfiguration(messagesFile);
     }
 
+    public void reloadMessages() {
+        loadMessagesConfig();
+        this.messagePrefix = ChatColor.translateAlternateColorCodes('&',
+                messagesConfig.getString("messages.prefix", "&b[Q-Blackjack] &7"));
+    }
+
     public String getMessage(String path) {
         String msg = messagesConfig.getString(path);
         if (msg == null) return ChatColor.RED + "Error: Message path not found in messages.yml: " + path;

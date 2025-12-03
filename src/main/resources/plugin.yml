@@ -1,5 +1,5 @@
 name: QBlackjack
-version: '1.0'
+version: '1.21'
 main: me.bintanq.qBlackjack.QBlackjack
 api-version: '1.21'
 authors: [ bintanq ]
@@ -10,15 +10,15 @@ softdepend:
 
 commands:
   blackjack:
-    description: Main command for QBlackjack, including game start, chip checks, and administration.
-    usage: /<command> <bet_amount> | /<command> chip <subcommand> | /<command> exchange <amount>
+    description: Main command for QBlackjack, including game start, chip checks, admin functions, and economy exchange.
+    usage: /<command> <bet_amount> | /<command> <reload/help> | /<command> chip <subcommand> | /<command> exchange <amount>
     permission: qblackjack.play
     aliases: [bj]
 
 permissions:
   qblackjack.play:
-    description: Allows players to start a Blackjack game and check their chip balance (/bj chip check).
+    description: Allows players to start a Blackjack game, use /bj help, and check their own chip balance.
     default: true
-  qblackjack.admin.chip:
-    description: Allows admins to use the command to give chips to players (/bj chip give).
+  qblackjack.admin:
+    description: Allows full administrative control over QBlackjack (e.g., /bj reload, /bj chip give/take/set).
     default: op

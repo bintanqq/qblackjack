@@ -5,7 +5,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 public class SettingsManager {
     private final QBlackjack plugin;
-    private final FileConfiguration config;
+    private FileConfiguration config; // Diubah menjadi non-final agar bisa di-reload
 
     public SettingsManager(QBlackjack plugin) {
         this.plugin = plugin;
@@ -13,8 +13,16 @@ public class SettingsManager {
     }
 
     public FileConfiguration getConfig() {
-        return this.config; // Asumsikan variabel internal konfigurasi bernama 'config'
+        return this.config;
     }
+
+    // --- PENAMBAHAN UNTUK RELOAD ---
+    public void reloadConfig() {
+        plugin.reloadConfig();
+        // Mengambil ulang konfigurasi yang baru dimuat
+        this.config = plugin.getConfig();
+    }
+    // --------------------------------
 
     public String getEconomyMode() { return config.getString("economy-mode", "VAULT"); }
     public void setEconomyMode(String mode) { config.set("economy-mode", mode); plugin.saveConfig(); }

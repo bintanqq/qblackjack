@@ -405,18 +405,10 @@ public class BlackjackGame {
         final int DEALER_END_SLOT = DEALER_START_SLOT + 4;
 
         for (int i = 0; i < gameGUI.getSize(); i++) {
-            // Slots yang HARUS DILEWATI
-            // SCORE: 3, 4, 5
-            // DEALER: 20-24 <-- REVISI
-            // PLAYER: 38-42
-            // ACTION: 47, 49, 51
             if ((i >= 3 && i <= 5) || (i >= DEALER_START_SLOT && i <= DEALER_END_SLOT) || (i >= 38 && i <= 42) || i == 47 || i == 49 || i == 51) {
                 continue;
             }
 
-            // Slots 9-17 (Row 2), 27-35 (Row 4) dan sisa slot di Row 3 (18-19, 25-26) adalah pemisah hitam/filler putih.
-
-            // Slots yang sekarang menjadi pemisah hitam: Row 2, Row 4, dan sisa Row 3.
             if ((i >= 9 && i <= 17) || (i >= 27 && i <= 35) || (i >= 18 && i <= DEALER_START_SLOT - 1) || (i >= DEALER_END_SLOT + 1 && i <= 26)) {
                 gameGUI.setItem(i, separator);
             } else {
@@ -425,7 +417,6 @@ public class BlackjackGame {
         }
     }
 
-    // --- G. GETTERS ---
     public Inventory getGameGUI() { return gameGUI; }
     public GameState getGameState() { return gameState; }
     public Player getPlayer() { return player; }

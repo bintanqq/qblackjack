@@ -12,9 +12,13 @@ messages:
     invalid-bet-range: "&cBets must be between %min% and %max%."
     invalid-bet-increment: "&cBets must be multiples of %increment%."
     general: "&cAn error occurred while processing the transaction."
+    no-permission: "&cYou do not have permission to perform this command."
 
   game:
     bet-placed: "&aA bet of &e%bet%&a has been placed. Starting game..."
+
+  reload:
+    success: "&aConfiguration and Chip data successfully reloaded."
 
   result:
     blackjack: "&6BLACKJACK! &aYou win &e%winnings%&a."
@@ -25,12 +29,20 @@ messages:
     forfeit: "&cYou left the game. &7Bet of &e%bet%&7 forfeited."
 
   chip:
-    usage: "&bUsage: /blackjack chip give <player> <amount> | check"
+    usage: "&bUsage: /blackjack chip <give/take/set/check> <player> <amount>"
     success: "&aSuccessfully added &e%amount% &aChips to %player%."
     given: "&aYou received &e%amount% &aChips from an admin."
     balance: "&aYour current Chip balance is &e%balance%&a."
     error-player-offline: "&cPlayer %player% is offline or does not exist."
     error-no-permission: "&cYou do not have permission to use this command."
+    success-give: "&aSuccessfully gave &e%amount% &aChips to %player%."
+    success-take: "&aSuccessfully took &e%amount% &aChips from %player%."
+    success-set: "&aSuccessfully set &e%amount% &aChips for %player%."
+
+    taken: "&cAn admin took &e%amount% &cChips from your balance."
+    set: "&aAn admin set your Chip balance to &e%amount%&a."
+
+    balance-other: "&a%player%'s current Chip balance is &e%balance%&a."
 
   exchange:
     usage: "&bUsage: /blackjack exchange <amount>"
