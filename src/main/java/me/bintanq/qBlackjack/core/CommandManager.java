@@ -12,7 +12,6 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,7 +41,6 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             }
         }
 
-        // --- LOGIKA GAME START ---
         if (!(sender instanceof Player)) {
             sender.sendMessage(messages.getMessage("messages.error.console"));
             return true;
@@ -86,8 +84,6 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    // --- SUB-COMMAND HANDLERS ---
-
     private void handleReloadCommand(CommandSender sender) {
         MessageManager messages = plugin.getMessageManager();
         if (!sender.hasPermission("qblackjack.admin")) {
@@ -126,7 +122,6 @@ public class CommandManager implements CommandExecutor, TabCompleter {
 
         String subCommand = args[1].toLowerCase();
 
-        // 1. CHECK
         if (subCommand.equals("check")) {
             Player targetPlayer = null;
             if (args.length == 3 && sender.hasPermission("qblackjack.admin")) {
@@ -144,7 +139,6 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             return;
         }
 
-        // 2. GIVE / TAKE / SET (Admin only)
         if (subCommand.equals("give") || subCommand.equals("take") || subCommand.equals("set")) {
             if (!sender.hasPermission("qblackjack.admin")) {
                 sender.sendMessage(messages.getMessage("messages.error.no-permission"));
@@ -228,9 +222,6 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                 .replace("%chip_amount%", String.valueOf(amount)));
     }
 
-
-    // --- TRANSAKSI UTILITY ---
-
     private boolean handleVaultTransaction(Player player, double amount) {
         Economy econ = plugin.getEconomy();
         MessageManager messages = plugin.getMessageManager();
@@ -253,13 +244,11 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    // --- TAB COMPLETER IMPLEMENTATION ---
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
 
         List<String> completions = new ArrayList<>();
 
-        // Level 1: /blackjack <subcommand | bet_amount>
         if (args.length == 1) {
             completions.add("chip");
             completions.add("exchange");
@@ -269,13 +258,11 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             }
 
             if (sender instanceof Player && !plugin.getBlackjackManager().isPlayerInGame(((Player) sender).getUniqueId())) {
-                completions.add("100");
-                completions.add("500");
+                completions.addAll(getRawBetSuggestions(plugin.getSettingsManager(), true));
             }
             return completions.stream().filter(s -> s.toLowerCase().startsWith(args[0].toLowerCase())).collect(Collectors.toList());
         }
 
-        // Level 2: /blackjack chip <subcommand>
         if (args.length == 2 && args[0].equalsIgnoreCase("chip")) {
             completions.add("check");
             if (sender.hasPermission("qblackjack.admin")) {
@@ -286,15 +273,13 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             return completions.stream().filter(s -> s.toLowerCase().startsWith(args[1].toLowerCase())).collect(Collectors.toList());
         }
 
-        // Level 2: /blackjack exchange <amount>
         if (args.length == 2 && args[0].equalsIgnoreCase("exchange")) {
-            return Arrays.asList("100", "500", "1000").stream().filter(s -> s.startsWith(args[1])).collect(Collectors.toList());
+            return getRawBetSuggestions(plugin.getSettingsManager(), false).stream().filter(s -> s.startsWith(args[1])).collect(Collectors.toList());
         }
 
-        // Level 3: /blackjack chip <give/take/set> <player>
-        if (args.length == 3 && args[0].equalsIgnoreCase("chip") && sender.hasPermission("qblackjack.admin")) {
+        if (args.length == 3 && args[0].equalsIgnoreCase("chip")) {
             String subCommand = args[1].toLowerCase();
-            if (subCommand.equals("give") || subCommand.equals("take") || subCommand.equals("set")) {
+            if (sender.hasPermission("qblackjack.admin") && (subCommand.equals("give") || subCommand.equals("take") || subCommand.equals("set"))) {
                 return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(name -> name.toLowerCase().startsWith(args[2].toLowerCase())).collect(Collectors.toList());
             }
             if (subCommand.equals("check")) {
@@ -302,14 +287,51 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             }
         }
 
-        // Level 4: /blackjack chip <give/take/set> <player> <amount>
         if (args.length == 4 && args[0].equalsIgnoreCase("chip") && sender.hasPermission("qblackjack.admin")) {
             String subCommand = args[1].toLowerCase();
             if (subCommand.equals("give") || subCommand.equals("take") || subCommand.equals("set")) {
-                return Arrays.asList("100", "1000", "5000").stream().filter(s -> s.startsWith(args[3])).collect(Collectors.toList());
+                return getRawBetSuggestions(plugin.getSettingsManager(), false).stream().filter(s -> s.startsWith(args[3])).collect(Collectors.toList());
             }
         }
 
         return Collections.emptyList();
+    }
+
+    private List<String> getRawBetSuggestions(SettingsManager settings, boolean useMinMaxOnly) {
+        double minBet = settings.getMinBet();
+        double maxBet = settings.getMaxBet();
+        double increment = settings.getIncrement();
+
+        List<String> suggestions = new ArrayList<>();
+
+        java.util.function.Function<Double, String> toRawString = amount -> String.valueOf((long) amount.doubleValue());
+
+        suggestions.add(toRawString.apply(minBet));
+        suggestions.add(toRawString.apply(maxBet));
+
+        if (!useMinMaxOnly) {
+            if (minBet < 100) {
+                suggestions.add(toRawString.apply(100.0));
+            }
+            if (maxBet > 1000) {
+                suggestions.add(toRawString.apply(1000.0));
+            }
+            if (maxBet > 5000) {
+                suggestions.add(toRawString.apply(5000.0));
+            }
+
+            if (minBet + increment * 2 <= maxBet) {
+                suggestions.add(toRawString.apply(minBet + increment * 2));
+            }
+        } else {
+            if (minBet < 500 && maxBet >= 500) {
+                suggestions.add(toRawString.apply(500.0));
+            }
+            if (minBet < 1000 && maxBet >= 1000) {
+                suggestions.add(toRawString.apply(1000.0));
+            }
+        }
+
+        return suggestions.stream().distinct().collect(Collectors.toList());
     }
 }

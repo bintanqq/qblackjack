@@ -25,11 +25,9 @@ public class Card {
         ItemStack paper = new ItemStack(Material.PAPER);
         ItemMeta meta = paper.getItemMeta();
 
-        // MENGHILANGKAN SIMBOL UNICODE DAN MENGGANTINYA DENGAN KODE WARNA/TEKS
         String color = getSuitColor(suit);
         String suitName = suit.toUpperCase();
 
-        // Nama item hanya menggunakan Rank dan Suit Name, menghilangkan simbol kotak
         meta.setDisplayName(color + rank + " of " + suitName + ChatColor.RESET + ChatColor.GRAY + " (Value: " + value + ")");
 
         List<String> lore = new ArrayList<>();

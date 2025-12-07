@@ -79,7 +79,7 @@ public class QBlackjack extends JavaPlugin {
     private void registerCommands() {
         CommandManager cmdManager = new CommandManager(this);
         getCommand("blackjack").setExecutor(cmdManager);
-        getCommand("blackjack").setTabCompleter(cmdManager); // BARU: Menambahkan TabCompleter
+        getCommand("blackjack").setTabCompleter(cmdManager);
     }
 
     private void registerEvents() {

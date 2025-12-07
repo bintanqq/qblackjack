@@ -1,7 +1,7 @@
 # =======================================================
 # Q-BLACKJACK CONFIGURATION FILE
 # =======================================================
-economy-mode: CHIP # PILIHAN: VAULT atau CHIP
+economy-mode: CHIP # CHOOSE: VAULT or CHIP
 
 payout:
   blackjack-multiplier: 2.5
@@ -20,7 +20,7 @@ gui-items:
   current-bet:
     material: GOLD_INGOT
     name: "&eCurrent Bet"
-    lore: "&7Status: %status%" # %status% diganti saat runtime
+    lore: "&7Status: %status%"
   dealer-score:
     material: EMERALD
     name: "&aDealer Visible Value"

@@ -33,7 +33,7 @@ QBlackjack is a dynamic and fully interactive Minecraft plugin that brings the c
 
 ## ⚙️ Installation
 
-1.  Download the latest `QBlackjack-v1.21.8.jar` file.
+1.  Download the latest `QBlackjack.jar` file.
 2.  Place the `.jar` file into your server's `plugins` folder.
 3.  Ensure you have **Vault** installed if you choose to use the Vault economy mode.
 4.  Restart (or reload) your server.

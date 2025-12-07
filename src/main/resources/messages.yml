@@ -56,4 +56,4 @@ messages:
     exit: "&eClick to Exit the Table"
 
   help:
-    usage: "&bUsage: /blackjack <bet_amount>"
+    usage: "&bUsage: /blackjack <bet_amount> or /blackjack chip <check|give|take|set"

@@ -64,21 +64,19 @@ public class ChipManager {
     public void deposit(UUID playerUUID, double amount) {
         if (amount <= 0) return;
         chipBalances.put(playerUUID, getBalance(playerUUID) + amount);
-        saveData(); // Panggil saveData setelah perubahan
+        saveData();
     }
 
     public boolean withdraw(UUID playerUUID, double amount) {
         if (amount <= 0 || !has(playerUUID, amount)) return false;
         chipBalances.put(playerUUID, getBalance(playerUUID) - amount);
-        saveData(); // Panggil saveData setelah perubahan
+        saveData();
         return true;
     }
 
-    // --- PENAMBAHAN UNTUK setBalance ---
     public void setBalance(UUID playerUUID, double amount) {
-        if (amount < 0) amount = 0; // Pastikan saldo tidak negatif
+        if (amount < 0) amount = 0;
         chipBalances.put(playerUUID, amount);
-        saveData(); // Panggil saveData setelah perubahan
+        saveData();
     }
-    // --------------------------------------
 }

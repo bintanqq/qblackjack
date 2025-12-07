@@ -10,6 +10,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
 
@@ -41,22 +43,20 @@ public class GameListener implements Listener {
         BlackjackGame game = manager.getPlayerGame(playerUUID);
         int slot = event.getSlot();
 
-        // SLOT YANG DIREVISI:
         final int HIT_SLOT = 47;
         final int FORFEIT_EXIT_SLOT = 49;
         final int STAND_SLOT = 51;
 
-        // 1. Logika Klik saat GameState.ENDED / DEALER_TURN
-        if (game.getGameState() != GameState.PLAYING && game.getGameState() != GameState.DEALING) {
-            // Hanya izinkan klik pada tombol EXIT (Slot 49)
-            if (slot == FORFEIT_EXIT_SLOT) {
-                game.forfeitAction();
-            }
-            return;
-        }
+        ItemStack clickedItem = event.getCurrentItem();
+        boolean isDisabledButton = clickedItem != null && clickedItem.getType() == Material.GRAY_DYE;
 
-        // 2. Logika Klik saat GameState.PLAYING
+
         if (game.getGameState() == GameState.PLAYING) {
+
+            if (isDisabledButton) {
+                return;
+            }
+
             if (slot == HIT_SLOT) {
                 game.hitAction();
             } else if (slot == STAND_SLOT) {
@@ -64,6 +64,15 @@ public class GameListener implements Listener {
             } else if (slot == FORFEIT_EXIT_SLOT) {
                 game.forfeitAction();
             }
+            return;
+        }
+
+        if (game.getGameState() != GameState.PLAYING && game.getGameState() != GameState.DEALING) {
+
+            if (slot == FORFEIT_EXIT_SLOT) {
+                game.forfeitAction();
+            }
+            return;
         }
     }
 
@@ -79,14 +88,12 @@ public class GameListener implements Listener {
 
         if (game == null) return;
 
-        // JIKA MASIH BERMAIN: Buka kembali GUI setelah 1 tick
         if (game.getGameState() == GameState.PLAYING || game.getGameState() == GameState.DEALING) {
             plugin.getServer().getScheduler().runTaskLater(plugin,
                     () -> player.openInventory(game.getGameGUI()), 1L);
             return;
         }
 
-        // JIKA GAME SUDAH BERAKHIR (ENDED/DEALER_TURN): Akhiri sesi di manager
         if (game.getGameState() == GameState.ENDED || game.getGameState() == GameState.DEALER_TURN) {
             manager.endGame(playerUUID);
         }

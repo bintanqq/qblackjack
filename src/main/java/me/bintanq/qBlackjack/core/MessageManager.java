@@ -6,6 +6,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
 public class MessageManager {
     private final QBlackjack plugin;
@@ -45,5 +48,15 @@ public class MessageManager {
 
     public String getGUITitlePrefix() {
         return guiTitlePrefix;
+    }
+
+    public static String formatAmount(double amount) {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.ROOT);
+        symbols.setGroupingSeparator('.');
+        symbols.setDecimalSeparator(',');
+
+        DecimalFormat formatter = new DecimalFormat("#,##0.##", symbols);
+
+        return formatter.format(amount);
     }
 }

@@ -30,8 +30,8 @@ public class BlackjackGame {
     private Inventory gameGUI;
     private List<Card> playerHand;
     private List<Card> dealerHand;
+    private boolean isProcessingAction = false;
 
-    // Konstanta Slot Kartu Dealer (Row 3)
     private final int DEALER_START_SLOT = 20;
 
     public BlackjackGame(QBlackjack plugin, Player player, double bet) {
@@ -44,8 +44,6 @@ public class BlackjackGame {
         this.dealerHand = new ArrayList<>();
     }
 
-    // --- A. SETUP & START GAME ---
-
     public void startGame() {
         MessageManager messages = plugin.getMessageManager();
         String guiTitle = messages.getGUITitlePrefix() + player.getName();
@@ -55,13 +53,9 @@ public class BlackjackGame {
 
         long initialDelay = 5L;
 
-        // D1 (Hidden, Slot 20 - Row 3) <-- REVISI
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> dealCard(dealerHand, DEALER_START_SLOT, true, false), initialDelay * 1);
-        // P1 C1 (Slot 38 - Row 5)
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> dealCard(playerHand, 38, false, false), initialDelay * 2);
-        // D2 (Terbuka, Slot 21 - Row 3) <-- REVISI
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> dealCard(dealerHand, DEALER_START_SLOT + 1, false, false), initialDelay * 3);
-        // P2 C2 (Slot 39 - Row 5)
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             dealCard(playerHand, 39, false, false);
             this.gameState = GameState.PLAYING;
@@ -70,14 +64,16 @@ public class BlackjackGame {
         }, initialDelay * 4);
     }
 
-    // --- B. AKSI PEMAIN ---
-
     public void hitAction() {
         if (gameState != GameState.PLAYING) return;
 
-        // Slot Kartu Pemain: 38, 39, 40, 41, 42
+        isProcessingAction = true;
+
         int nextSlot = 38 + playerHand.size();
-        if (nextSlot > 42) return;
+        if (nextSlot > 42){
+            isProcessingAction = false;
+            return;
+        }
 
         updateActionButtons(false);
         dealCard(playerHand, nextSlot, false, false);
@@ -89,9 +85,9 @@ public class BlackjackGame {
         this.gameState = GameState.DEALER_TURN;
         updateActionButtons(false);
 
-        revealDealerHoleCard(false);
+        revealDealerHoleCard(true);
 
-        plugin.getServer().getScheduler().runTaskLater(plugin, this::dealerTurn, 25L);
+        plugin.getServer().getScheduler().runTaskLater(plugin, this::continueDealerTurn, 25L);
     }
 
     public void forfeitAction() {
@@ -102,34 +98,22 @@ public class BlackjackGame {
         }
     }
 
-    // --- C. GILIRAN DEALER & PAYOUT ---
-
-    private void dealerTurn() {
+    private void continueDealerTurn() {
         int dealerValue = calculateValue(dealerHand);
-        int nextSlot = DEALER_START_SLOT + 2; // Slot 22, 23, 24 (Kartu Dealer)
-        long totalDelay = 0;
 
-        while (dealerValue < 17) {
-            final int slot = nextSlot;
-
-            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                dealCard(dealerHand, slot, false, true);
-
-                if (calculateValue(dealerHand) >= 17 || calculateValue(dealerHand) > 21) {
-                    plugin.getServer().getScheduler().runTaskLater(plugin, this::processPayouts, 20L);
-                }
-            }, totalDelay);
-
-            dealerValue = calculateValue(dealerHand);
-            nextSlot++;
-            totalDelay += 10L;
-
-            if (nextSlot > DEALER_START_SLOT + 4) break; // Maksimal 5 kartu (Slot 20 hingga 24)
+        if (dealerValue >= 17 || dealerValue > 21 || dealerHand.size() >= 5) {
+            plugin.getServer().getScheduler().runTaskLater(plugin, this::processPayouts, 20L);
+            return;
         }
 
-        if (dealerValue >= 17) {
-            plugin.getServer().getScheduler().runTaskLater(plugin, this::processPayouts, totalDelay + 20L);
-        }
+        final int slotToDeal = DEALER_START_SLOT + dealerHand.size();
+
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            dealCard(dealerHand, slotToDeal, false, true);
+
+            plugin.getServer().getScheduler().runTaskLater(this.plugin, this::continueDealerTurn, 20L);
+
+        }, 20L);
     }
 
     public void processPayouts() {
@@ -176,8 +160,8 @@ public class BlackjackGame {
         }
 
         player.sendMessage(messages.getMessage(messagePath)
-                .replace("%winnings%", String.valueOf(totalWinnings))
-                .replace("%bet%", String.valueOf(currentBet)));
+                .replace("%winnings%", MessageManager.formatAmount(totalWinnings))
+                .replace("%bet%", MessageManager.formatAmount(currentBet)));
 
         updateActionButtons(false);
     }
@@ -186,11 +170,9 @@ public class BlackjackGame {
         if (gameState == GameState.ENDED) return;
         this.gameState = GameState.ENDED;
         player.sendMessage(plugin.getMessageManager().getMessage("messages.result.forfeit")
-                .replace("%bet%", String.valueOf(currentBet)));
+                .replace("%bet%", MessageManager.formatAmount(currentBet)));
         updateActionButtons(false);
     }
-
-    // --- D. CORE LOGIC HELPER ---
 
     public int calculateValue(List<Card> hand) {
         int value = 0;
@@ -225,8 +207,6 @@ public class BlackjackGame {
         updateScoreboard();
     }
 
-    // --- E. GUI & CARD HANDLERS ---
-
     private void dealCard(List<Card> targetHand, int slot, boolean isHidden, boolean isDealerTurn) {
         Card card = deck.drawCard();
         targetHand.add(card);
@@ -243,6 +223,7 @@ public class BlackjackGame {
             if (!isDealerTurn) {
                 checkGameStatus(targetHand, false);
                 updateActionButtons(calculateValue(playerHand) <= 21);
+                isProcessingAction = false;
             }
             updateScoreboard();
         }, 5L);
@@ -252,7 +233,7 @@ public class BlackjackGame {
         if (dealerHand.isEmpty()) return;
 
         Card hiddenCard = dealerHand.get(0);
-        int slot = DEALER_START_SLOT; // Slot 20 <-- REVISI
+        int slot = DEALER_START_SLOT;
 
         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.5f);
 
@@ -265,19 +246,26 @@ public class BlackjackGame {
     }
 
     public void updateActionButtons(boolean enableHitStand) {
-        // Tombol HIT (Slot 47)
-        ItemStack hitButton = enableHitStand
-                ? createButton(Material.LIME_STAINED_GLASS_PANE, "HIT", ChatColor.GREEN, "take another card")
-                : createDisabledButton();
-        gameGUI.setItem(47, hitButton);
 
-        // Tombol STAND (Slot 51)
-        ItemStack standButton = enableHitStand
-                ? createButton(Material.RED_STAINED_GLASS_PANE, "STAND", ChatColor.RED, "end your turn")
-                : createDisabledButton();
-        gameGUI.setItem(51, standButton);
+        if (gameState == GameState.ENDED) {
 
-        // Tombol FORFEIT / EXIT (Slot 49)
+            gameGUI.setItem(47, createDisabledButton());
+
+            gameGUI.setItem(51, createDisabledButton());
+
+        } else {
+
+            ItemStack hitButton = enableHitStand
+                    ? createButton(Material.LIME_STAINED_GLASS_PANE, "HIT", ChatColor.GREEN, "take another card")
+                    : createDisabledButton();
+            gameGUI.setItem(47, hitButton);
+
+            ItemStack standButton = enableHitStand
+                    ? createButton(Material.RED_STAINED_GLASS_PANE, "STAND", ChatColor.RED, "end your turn")
+                    : createDisabledButton();
+            gameGUI.setItem(51, standButton);
+        }
+
         setupExitForfeitButton();
 
         setupBackground();
@@ -303,11 +291,9 @@ public class BlackjackGame {
         int pValue = calculateValue(playerHand);
         int dValue = calculateValue(dealerHand);
 
-        // Slot 3 (Player Score)
         gameGUI.setItem(3, createConfigItem("player-score", String.valueOf(pValue)));
 
-        // Slot 4 (Current Bet)
-        ItemStack betInfo = createConfigItem("current-bet", (int)currentBet);
+        ItemStack betInfo = createConfigItem("current-bet", MessageManager.formatAmount(currentBet));
         ItemMeta betMeta = betInfo.getItemMeta();
 
         SettingsManager settings = plugin.getSettingsManager();
@@ -317,14 +303,9 @@ public class BlackjackGame {
         betInfo.setItemMeta(betMeta);
         gameGUI.setItem(4, betInfo);
 
-        // Slot 5 (Dealer Score)
         int visibleDValue = (gameState == GameState.PLAYING || gameState == GameState.DEALING)
                 ? calculateVisibleDealerValue() : dValue;
         gameGUI.setItem(5, createConfigItem("dealer-score", String.valueOf(visibleDValue)));
-    }
-
-    private ItemStack createConfigItem(String configPath, int value) {
-        return createConfigItem(configPath, String.valueOf(value));
     }
 
     private ItemStack createConfigItem(String configPath, String value) {
@@ -401,7 +382,6 @@ public class BlackjackGame {
         ItemStack separator = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         separator.setItemMeta(meta);
 
-        // Menentukan slot dealer (20 hingga 24)
         final int DEALER_END_SLOT = DEALER_START_SLOT + 4;
 
         for (int i = 0; i < gameGUI.getSize(); i++) {
@@ -420,4 +400,5 @@ public class BlackjackGame {
     public Inventory getGameGUI() { return gameGUI; }
     public GameState getGameState() { return gameState; }
     public Player getPlayer() { return player; }
+    public double getCurrentBet() { return currentBet; }
 }
